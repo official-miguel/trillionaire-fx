@@ -13,6 +13,7 @@ const ICON = { BUY: "▲", SELL: "▼", EXIT: "■", HOLD: "●", WATCH: "◎", 
 
 const TF_LABEL = { M1: "1m", M5: "5m", M15: "15m", M30: "30m", H1: "1H", H4: "4H",
   D1: "D", W1: "W", MN1: "M" };
+const PHONE = window.matchMedia("(max-width: 767px)");
 const state = {
   symbol: localStorage.getItem("tfx.symbol") || "EURUSD",
   tf: localStorage.getItem("tfx.tf") || "D1", ctype: "candles", live: null, liveTimer: null,
@@ -20,9 +21,26 @@ const state = {
   ind: JSON.parse(localStorage.getItem("tfx.ind") || "null") || {
     dc20: true, dc55: false, dc100: false, ema20: true, ema100: false, ema200: true,
     atrstop: false, regime: true, levels: true, markers: true, adx: true, rsi: false, atr: false,
-    setup: true, ict: true },
+    setup: true, ict: !PHONE.matches },
   tab: "trades", hover: null,
 };
+if (PHONE.matches && !localStorage.getItem("tfx.ind")) {
+  Object.assign(state.ind, { dc20: false, adx: false, markers: false, regime: false });
+}
+
+/* ------------------------------------------------------------ phone views */
+function setView(v) {
+  document.body.dataset.view = v;
+  $$(".mnav button").forEach((b) => {
+    const on = b.dataset.view === v;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-current", on ? "page" : "false");
+  });
+  document.body.classList.remove("acct-open");
+  $("#moreBtn")?.setAttribute("aria-expanded", "false");
+  if (v === "chart") requestAnimationFrame(() => { sizeOverlay(); requestDraw(); });
+  if (PHONE.matches) window.scrollTo(0, 0);
+}
 
 async function api(path, opts = {}) {
   const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
@@ -386,7 +404,7 @@ async function loadWatchlist() {
         <td class="${(r.change_pct ?? 0) >= 0 ? "up" : "down"}">${r.change_pct === null ? "–" :
           `${r.change_pct >= 0 ? "▲" : "▼"} ${Math.abs(r.change_pct).toFixed(2)}%`}</td></tr>`).join("");
     $$("#watchTable tbody tr").forEach((tr) => {
-      const go = () => selectSymbol(tr.dataset.sym);
+      const go = () => { selectSymbol(tr.dataset.sym); if (PHONE.matches) setView("chart"); };
       tr.addEventListener("click", go);
       tr.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
     });
@@ -712,6 +730,8 @@ const TABS = {
 async function renderTab() {
   const el = $("#tabBody"); el.innerHTML = `<p class="muted">Loading…</p>`;
   $$(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === state.tab));
+  const act = $(".tabs button.active");
+  if (act) act.parentElement.scrollLeft = act.offsetLeft - 8;   // keep the chosen tab visible
   try { await TABS[state.tab](el); } catch (e) { el.innerHTML = `<p class="fail">Could not load: ${esc(e.message)}</p>`; }
 }
 async function closeTrade(id) {
@@ -814,7 +834,13 @@ function bindUI() {
   $("#themeBtn").addEventListener("click", async () => {
     const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = t; await api("/api/settings", { method: "PUT", body: JSON.stringify({ theme: t }) }); renderChart(); });
-  $("#settingsBtn").addEventListener("click", () => { state.tab = "settings"; renderTab(); });
+  $("#settingsBtn").addEventListener("click", () => {
+    state.tab = "settings"; renderTab(); if (PHONE.matches) setView("more"); });
+  $$(".mnav button").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  $("#moreBtn").addEventListener("click", () => {
+    const open = document.body.classList.toggle("acct-open");
+    $("#moreBtn").setAttribute("aria-expanded", String(open)); });
+  PHONE.addEventListener("change", () => setView(document.body.dataset.view || "chart"));
   $("#helpBtn").addEventListener("click", helpDialog);
   const saveAcct = async () => {
     try { await api("/api/settings", { method: "PUT", body: JSON.stringify({ balance: +$("#balanceInput").value, risk_pct: +$("#riskInput").value }) });
@@ -849,6 +875,6 @@ async function init() {
     setInterval(() => { loadWatchlist(); loadAlerts(); }, 5 * 60 * 1000);
   } catch (e) { showState(`Could not start: ${e.message}`); }
 }
-window.TFX = { state, selectSymbol, setTool, renderTab };  // for tests / debugging
+window.TFX = { state, selectSymbol, setTool, renderTab, setView };  // for tests / debugging
 init();
 })();
