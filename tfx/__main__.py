@@ -313,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="tfx", description="TrillionaireFX (decision support)")
     parser.add_argument("command",
                         choices=["run", "daily", "fetch", "status", "quality", "sources",
-                                 "research", "validate", "replay", "study", "moves"],
+                                 "research", "validate", "replay", "study", "moves", "publish"],
                         nargs="?", default="run")
     parser.add_argument("--start", help="replay start date YYYY-MM-DD (default last Monday)")
     parser.add_argument("--end", help="replay end date YYYY-MM-DD (default start + 4 days)")
@@ -325,6 +325,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="replay one strategy (default: all)")
     parser.add_argument("--only", help="validate only these strategies (comma separated); "
                         "earlier results are kept and not re-counted")
+    parser.add_argument("--push", action="store_true",
+                        help="publish: commit site/ and push it (only if it changed)")
     parser.add_argument("--compare", action="store_true",
                         help="replay every strategy separately and compare")
     args = parser.parse_args(argv)
@@ -344,6 +346,11 @@ def main(argv: list[str] | None = None) -> int:
         return _study(svc)
     if args.command == "moves":
         return _moves(svc)
+    if args.command == "publish":
+        from tfx.publish import publish
+
+        print("Public site: " + publish(svc, args.push))
+        return 0
     if args.command == "research":
         return _print_research(svc)
     if args.command == "quality":

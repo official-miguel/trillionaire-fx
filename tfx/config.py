@@ -237,6 +237,26 @@ class ServerConfig(BaseModel):
 
     host: str = "127.0.0.1"
     port: int = Field(default=8765, ge=1024, le=65535)
+    # Extra names the app answers to. ONLY private Tailscale names (*.ts.net) are
+    # allowed: they are reachable solely from your own signed-in devices through
+    # `tailscale serve`, while the server itself stays bound to localhost.
+    allowed_hosts: list[str] = Field(default_factory=list)
+
+    @field_validator("allowed_hosts")
+    @classmethod
+    def _private_tailnet_only(cls, v: list[str]) -> list[str]:
+        out = []
+        for h in v:
+            name = h.strip().lower()
+            labels = name.split(".")
+            if (not name.endswith(".ts.net") or len(labels) < 4 or "*" in name
+                    or any(not lab or not all(c.isalnum() or c == "-" for c in lab)
+                           for lab in labels)):
+                raise ValueError(
+                    f"server.allowed_hosts: {h!r} is not a private Tailscale name "
+                    "(expected e.g. my-pc.tail1234.ts.net); public hosts are not allowed")
+            out.append(name)
+        return out
 
     @field_validator("host")
     @classmethod

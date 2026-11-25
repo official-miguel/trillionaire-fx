@@ -311,6 +311,14 @@ move_study:
   min_trades: 100
   bracket: {stop_atr: 1.0, target_r: 3.0, time_stop: 10}
 
+# Public view-only website (Vercel). `python -m tfx publish --push` builds site/ from a
+# BLANK account (no trades, journal, settings or balance) and pushes it only when the
+# published data changed. While the app runs it republishes every `every_hours`.
+publish:
+  enabled: true
+  push: true
+  every_hours: 3
+
 mindset:
   max_new_trades_per_week: 3
   cooldown_after_losing_days: 2
@@ -324,3 +332,6 @@ paper:
 server:
   host: 127.0.0.1    # localhost only — never bind to 0.0.0.0
   port: 8765
+  # Phone access through Tailscale (private to your devices; see README "Use it on
+  # your phone"). Add your PC's Tailscale name, e.g. [my-pc.tail1234.ts.net].
+  allowed_hosts: []

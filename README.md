@@ -74,6 +74,26 @@ after each daily bar completes, plus a 06:30 UTC pending-order reminder. If you 
 leave the app running, add a Windows Task Scheduler job that runs
 `.venv\Scripts\python.exe -m tfx daily` at 03:35 local time (MT5 must be open).
 
+## Public website (view-only, any device)
+
+The full app runs only on your PC (it needs MT5 and keeps your journal private). A
+**view-only** copy can be published to Vercel so anyone with the link can watch the
+market and the analysis on any phone or computer:
+
+* **Live charts:** a small Vercel function (`api/live/[symbol].js`) serves live prices
+  for every timeframe from Yahoo Finance, refreshing every few seconds. These can lag
+  a few seconds and are not confirmed by MT5, and the site says so.
+* **Analysis:** signals, the market read, ICT / supply & demand zones, validation and
+  data quality come from your PC's latest run (`site/data/`).
+* **Private by construction:** the site is built from a blank account, so trades,
+  journal, mindset log, balance, risk, drawings and alerts never appear. Buttons that
+  change anything are hidden; the site cannot change your data.
+
+Publish manually with `python -m tfx publish --push`. While `python -m tfx run` is open
+it republishes every 3 hours (`publish:` in config.yaml) and pushes only if something
+changed. Vercel settings: import the GitHub repo; `vercel.json` makes it a static site
+(output `site/`) with the live function, so no build settings are needed.
+
 ## How to read the app
 
 * **Watchlist chips**: ▲ BUY, ▼ SELL, ■ EXIT, ● HOLD, ◎ WATCH, – WAIT. A 🔒 means a

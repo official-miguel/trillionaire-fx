@@ -103,9 +103,10 @@ def _series(times: list[int], values: pd.Series) -> list[dict[str, Any]]:
 def create_app(pipeline: Pipeline, notifier: Notifier, intraday: IntradayService | None = None,
                clock: Any = None, chart: ChartData | None = None) -> FastAPI:
     app = FastAPI(title="TrillionaireFX", version=__version__, docs_url="/api/docs")
-    app.add_middleware(TrustedHostMiddleware,
-                       allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]"])
     svc, store, cfg = pipeline.svc, pipeline.store, pipeline.cfg
+    app.add_middleware(TrustedHostMiddleware,
+                       allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]",
+                                      *cfg.server.allowed_hosts])
     chart = chart or ChartData(svc.providers.get("mt5"))
     now = clock or (lambda: datetime.now(UTC))
     mind = Mindset(store, cfg.section("mindset"), now)

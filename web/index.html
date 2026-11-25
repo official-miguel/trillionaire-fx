@@ -10,6 +10,32 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23111827'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' stroke='%234c9aff' stroke-width='3' fill='none'/%3E%3C/svg%3E">
 </head>
 <body data-view="chart">
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 15l4-4 3 3 5-6"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="18" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.5"/></symbol>
+    <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.7"/><circle cx="12" cy="16.8" r="0.9" fill="currentColor"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-cursor" viewBox="0 0 24 24"><path d="M6 4l12 7-5.5 1.5L10 18z"/></symbol>
+    <symbol id="i-cross" viewBox="0 0 24 24"><path d="M12 3v7M12 14v7M3 12h7M14 12h7"/></symbol>
+    <symbol id="i-hline" viewBox="0 0 24 24"><path d="M3 12h18"/><circle cx="7" cy="12" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="M4 19L20 5"/><circle cx="4.5" cy="18.5" r="1.6" fill="currentColor"/><circle cx="19.5" cy="5.5" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-rect" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="1.5"/></symbol>
+    <symbol id="i-ruler" viewBox="0 0 24 24"><path d="M3.5 15.5l12-12 5 5-12 12z"/><path d="M7.5 11.5l2 2M10.5 8.5l2 2M13.5 5.5l2 2"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M12 6v13M9 19h6"/></symbol>
+    <symbol id="i-long" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-short" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 19l-4-4 9.5-9.5a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L11 18.5"/><path d="M8 19h12M8.5 10.5l5 5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5"/><circle cx="12" cy="17" r="0.9" fill="currentColor"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></symbol>
+  </defs>
+</svg>
 <div id="app" class="layout">
   <!-- ============================== TOP BAR ============================== -->
   <header class="topbar" role="banner">
@@ -27,7 +53,7 @@
         <button data-ctype="ha" title="Heikin Ashi">HA</button>
       </div>
       <div class="menu">
-        <button id="indBtn" aria-haspopup="true" aria-expanded="false">Indicators ▾</button>
+        <button id="indBtn" aria-haspopup="true" aria-expanded="false">Indicators <svg class="ico" aria-hidden="true"><use href="#i-chevron"/></svg></button>
         <div id="indMenu" class="dropdown" role="menu" hidden></div>
       </div>
     </div>
@@ -36,29 +62,29 @@
       <label class="mini">Balance <input id="balanceInput" type="number" inputmode="decimal" min="1" step="1" aria-label="Account balance"></label>
       <span id="ccyLabel" class="muted"></span>
       <label class="mini">Risk % <input id="riskInput" type="number" inputmode="decimal" min="0.05" max="1" step="0.05" aria-label="Risk per trade percent"></label>
-      <button id="themeBtn" class="icon" title="Toggle light/dark theme" aria-label="Toggle theme">◐</button>
-      <button id="settingsBtn" class="icon" title="Settings" aria-label="Settings">⚙</button>
-      <button id="helpBtn" class="icon hide-touch" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+      <button id="themeBtn" class="icon" title="Toggle light/dark theme" aria-label="Toggle theme"><svg class="ico" aria-hidden="true"><use href="#i-theme"/></svg></button>
+      <button id="settingsBtn" class="icon" title="Settings" aria-label="Settings"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg></button>
+      <button id="helpBtn" class="icon hide-touch" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts"><svg class="ico" aria-hidden="true"><use href="#i-help"/></svg></button>
     </div>
     <div class="menu">
-      <button id="bellBtn" class="icon" aria-label="Alerts" title="Alerts">🔔<span id="bellCount" class="badge" hidden>0</span></button>
+      <button id="bellBtn" class="icon" aria-label="Alerts" title="Alerts"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span id="bellCount" class="badge" hidden>0</span></button>
       <div id="bellMenu" class="dropdown wide" hidden></div>
     </div>
-    <button id="moreBtn" class="icon only-phone" aria-label="Account and settings" aria-expanded="false" aria-controls="acct">⋯</button>
+    <button id="moreBtn" class="icon only-phone" aria-label="Account and settings" aria-expanded="false" aria-controls="acct"><svg class="ico" aria-hidden="true"><use href="#i-dots"/></svg></button>
   </header>
 
   <!-- ============================== LEFT TOOLBAR ============================== -->
   <nav class="toolbar" aria-label="Drawing tools">
-    <button data-tool="cursor" class="active" title="Cursor (Esc)" aria-label="Cursor">➤</button>
-    <button data-tool="crosshair" title="Crosshair" aria-label="Crosshair">✛</button>
-    <button data-tool="hline" title="Horizontal line (Alt+H)" aria-label="Horizontal line">―</button>
-    <button data-tool="trendline" title="Trend line (Alt+T)" aria-label="Trend line">╱</button>
-    <button data-tool="rect" title="Rectangle (Alt+R)" aria-label="Rectangle">▭</button>
-    <button data-tool="measure" title="Measure (Alt+M)" aria-label="Measure">📏</button>
-    <button data-tool="text" title="Text note (Alt+N)" aria-label="Text note">T</button>
-    <button data-tool="long" title="Long position (Alt+L)" aria-label="Long position tool">⬆</button>
-    <button data-tool="short" title="Short position (Alt+S)" aria-label="Short position tool">⬇</button>
-    <button data-tool="eraser" title="Eraser (Alt+E)" aria-label="Eraser">⌫</button>
+    <button data-tool="cursor" class="active" title="Cursor (Esc)" aria-label="Cursor"><svg class="ico" aria-hidden="true"><use href="#i-cursor"/></svg></button>
+    <button data-tool="crosshair" title="Crosshair" aria-label="Crosshair"><svg class="ico" aria-hidden="true"><use href="#i-cross"/></svg></button>
+    <button data-tool="hline" title="Horizontal line (Alt+H)" aria-label="Horizontal line"><svg class="ico" aria-hidden="true"><use href="#i-hline"/></svg></button>
+    <button data-tool="trendline" title="Trend line (Alt+T)" aria-label="Trend line"><svg class="ico" aria-hidden="true"><use href="#i-trend"/></svg></button>
+    <button data-tool="rect" title="Rectangle (Alt+R)" aria-label="Rectangle"><svg class="ico" aria-hidden="true"><use href="#i-rect"/></svg></button>
+    <button data-tool="measure" title="Measure (Alt+M)" aria-label="Measure"><svg class="ico" aria-hidden="true"><use href="#i-ruler"/></svg></button>
+    <button data-tool="text" title="Text note (Alt+N)" aria-label="Text note"><svg class="ico" aria-hidden="true"><use href="#i-text"/></svg></button>
+    <button data-tool="long" title="Long position (Alt+L)" aria-label="Long position tool"><svg class="ico" aria-hidden="true"><use href="#i-long"/></svg></button>
+    <button data-tool="short" title="Short position (Alt+S)" aria-label="Short position tool"><svg class="ico" aria-hidden="true"><use href="#i-short"/></svg></button>
+    <button data-tool="eraser" title="Eraser (Alt+E)" aria-label="Eraser"><svg class="ico" aria-hidden="true"><use href="#i-eraser"/></svg></button>
   </nav>
 
   <!-- ============================== CHART ============================== -->
@@ -107,10 +133,10 @@
 
   <!-- ============================== PHONE NAV ============================== -->
   <nav class="mnav" aria-label="Sections">
-    <button data-view="chart" class="active"><span aria-hidden="true">📈</span>Chart</button>
-    <button data-view="signal"><span aria-hidden="true">🎯</span>Signal</button>
-    <button data-view="watch"><span aria-hidden="true">☰</span>Watchlist</button>
-    <button data-view="more"><span aria-hidden="true">▦</span>More</button>
+    <button data-view="chart" class="active"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg>Chart</button>
+    <button data-view="signal"><svg class="ico" aria-hidden="true"><use href="#i-target"/></svg>Signal</button>
+    <button data-view="watch"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg>Watchlist</button>
+    <button data-view="more"><svg class="ico" aria-hidden="true"><use href="#i-grid"/></svg>More</button>
   </nav>
 
   <footer class="footer" role="contentinfo">

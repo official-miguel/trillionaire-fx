@@ -63,6 +63,18 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
+.ico { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; flex-shrink: 0; }
+#indBtn .ico { width: 14px; height: 14px; margin-left: 2px; }
+td .ico { width: 14px; height: 14px; margin-left: 3px; color: var(--muted); }
+td .ico.warn { color: var(--warn); }
+
+/* public view-only site: hide everything personal or that changes data */
+.static .acct .mini, .static #ccyLabel, .static #settingsBtn, .static .menu:has(#bellBtn),
+.static .toolbar, .static #startChecklist, .static #logOff,
+.static .tabs button:not([data-tab="validation"]):not([data-tab="quality"]) { display: none !important; }
+.static .layout { grid-template-columns: 0 minmax(0, 1fr) 380px; }
+
 /* ------------------------------------------------------- desktop layout */
 .layout { display: grid; height: 100vh; height: 100dvh;
   grid-template-columns: 46px minmax(0, 1fr) 380px;
@@ -293,6 +305,7 @@ dialog label.check input { margin-top: 3px; width: 18px; height: 18px; min-heigh
     border-right: none; border-top: 1px solid var(--border); flex-shrink: 0;
     scrollbar-width: none; }
   .toolbar::-webkit-scrollbar { display: none; }
+  .static .layout { grid-template-columns: none; }
   .toolbar button { width: 42px; height: 38px; flex-shrink: 0; background: var(--panel-2);
     border-color: var(--border); }
   .regime { font-size: 12.5px; padding: 6px 10px; white-space: nowrap; }
@@ -329,9 +342,8 @@ dialog label.check input { margin-top: 3px; width: 18px; height: 18px; min-heigh
   .mnav button { border: none; background: transparent; border-radius: 0; display: flex;
     flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     font-size: 11px; color: var(--muted); min-height: 0; height: 100%; }
-  .mnav button span { font-size: 19px; line-height: 1; filter: grayscale(.4); }
+  .mnav .ico { width: 22px; height: 22px; }
   .mnav button.active { color: var(--accent); background: var(--accent-soft); }
-  .mnav button.active span { filter: none; }
 
   dialog { width: 100vw; max-width: none; max-height: 92vh; margin: auto 0 0;
     border-radius: 18px 18px 0 0; padding: 18px 16px calc(18px + var(--safe-b)); }

@@ -34,6 +34,12 @@ def test_risk_hard_cap_cannot_be_raised() -> None:
 def test_server_must_bind_localhost() -> None:
     with pytest.raises(ValidationError, match="localhost"):
         ServerConfig(host="0.0.0.0")
+    ok = ServerConfig(allowed_hosts=["My-PC.tail1234.ts.net"])
+    assert ok.allowed_hosts == ["my-pc.tail1234.ts.net"] and ok.host == "127.0.0.1"
+    for bad in ("example.com", "evil.ts.net.example.com", "*.tail1234.ts.net",
+                "ts.net", "tail1234.ts.net", "my pc.tail1.ts.net", "x.vercel.app"):
+        with pytest.raises(ValueError):
+            ServerConfig(allowed_hosts=[bad])
 
 
 def test_currency_normalised_and_validated() -> None:

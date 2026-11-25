@@ -76,5 +76,12 @@ def start_scheduler(pipeline: Pipeline, notifier: Notifier,
                   coalesce=True)
     sched.add_job(pre_session_reminder, "cron", day_of_week="mon-fri", hour=6, minute=30,
                   args=[pipeline, notifier], id="reminder", max_instances=1, coalesce=True)
+    pub = pipeline.cfg.section("publish")
+    if pub.get("enabled", False):   # public view-only site (pushes only when data changed)
+        from tfx.publish import publish_job
+
+        sched.add_job(publish_job, "cron", minute=50,
+                      hour=f"*/{int(pub.get('every_hours', 3))}",
+                      args=[pipeline.svc], id="publish", max_instances=1, coalesce=True)
     sched.start()
     return sched

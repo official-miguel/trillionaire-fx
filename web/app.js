@@ -10,10 +10,13 @@ const fmt = (v, d = 5) => (v === null || v === undefined || Number.isNaN(v)) ? "
   Number(v).toFixed(d).replace(/0+$/, "").replace(/\.$/, "");
 const pct = (v, d = 1) => (v === null || v === undefined) ? "–" : `${(v * 100).toFixed(d)}%`;
 const ICON = { BUY: "▲", SELL: "▼", EXIT: "■", HOLD: "●", WATCH: "◎", WAIT: "–" };
+const ico = (name, cls = "") => `<svg class="ico ${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 
 const TF_LABEL = { M1: "1m", M5: "5m", M15: "15m", M30: "30m", H1: "1H", H4: "4H",
   D1: "D", W1: "W", MN1: "M" };
 const PHONE = window.matchMedia("(max-width: 767px)");
+const STATIC = !!window.TFX_STATIC;            // public view-only site
+if (STATIC) document.documentElement.classList.add("static");
 const state = {
   symbol: localStorage.getItem("tfx.symbol") || "EURUSD",
   tf: localStorage.getItem("tfx.tf") || "D1", ctype: "candles", live: null, liveTimer: null,
@@ -22,7 +25,7 @@ const state = {
     dc20: true, dc55: false, dc100: false, ema20: true, ema100: false, ema200: true,
     atrstop: false, regime: true, levels: true, markers: true, adx: true, rsi: false, atr: false,
     setup: true, ict: !PHONE.matches },
-  tab: "trades", hover: null,
+  tab: STATIC ? "validation" : "trades", hover: null,
 };
 if (PHONE.matches && !localStorage.getItem("tfx.ind")) {
   Object.assign(state.ind, { dc20: false, adx: false, markers: false, regime: false });
@@ -43,10 +46,126 @@ function setView(v) {
 }
 
 async function api(path, opts = {}) {
+  if (STATIC) return staticApi(path, opts);
   const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
   const body = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(body.detail || `HTTP ${r.status}`);
   return body;
+}
+
+/* ------------------------------------------- public view-only site (Vercel) */
+/* Published analysis comes from /data/*.json (written by `python -m tfx publish` on
+   the owner's PC from a BLANK account: no personal data). Candles are LIVE from the
+   /api/live function (Yahoo, display only); indicators are recomputed here with the
+   same formulas as tfx/strategies/indicators.py so they extend with the live bars. */
+const SNAP_TF = new Set(["D1", "W1", "MN1"]);
+async function getJson(url) {
+  const r = await fetch(url, { cache: "no-cache" });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.detail || `HTTP ${r.status}`);
+  return body;
+}
+async function staticApi(path, opts) {
+  if (opts.method && opts.method !== "GET")
+    throw new Error("View-only site: this is available only in the owner's own app.");
+  const u = new URL(path, location.origin);
+  const p = u.pathname.split("/").filter(Boolean);       // ["api", name, ...]
+  const tf = u.searchParams.get("tf") || "D1";
+  switch (p[1]) {
+    case "meta": return getJson("/data/meta.json");
+    case "watchlist": return getJson("/data/watchlist.json");
+    case "signal": return getJson(`/data/signal/${p[2]}.json`);
+    case "analysis": return getJson(`/data/analysis/${p[2]}.json`);
+    case "validation": return getJson("/data/validation.json");
+    case "quality": return getJson("/data/quality.json");
+    case "settings": return { theme: safeGet("tfx.theme") || "dark", balance: "", risk_pct: "",
+                              currency: "", static: true };
+    case "drawings": case "alerts": return [];
+    case "live": return getJson(`/api/live/${p[2]}?tf=${tf}`);
+    case "candles": return staticCandles(p[2], tf);
+    default: throw new Error("Not available on the public view-only site.");
+  }
+}
+function safeGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+async function staticCandles(sym, tf) {
+  let d, live = null;
+  if (SNAP_TF.has(tf)) {
+    d = await getJson(`/data/candles/${sym}_${tf}.json`);
+    live = await getJson(`/api/live/${sym}?tf=${tf}`).catch(() => null);
+    if (live?.bars?.length) mergeToday(d.candles, live.bars[0], tf);
+  } else {
+    live = await getJson(`/api/live/${sym}?tf=${tf}&full=1`);
+    const z = await getJson(`/data/zones/${sym}_${tf}.json`).catch(() => ({}));
+    d = { symbol: sym, tf, validated_view: false, candles: live.bars, ict: z.ict || null,
+          markers: [], regimes: [], data: { status: "LIVE", message: live.note } };
+  }
+  d.overlays = computeOverlays(d.candles);
+  d.live = !!live;
+  d.source = "yahoo (live)";
+  d.note = `${tf === "D1" ? "" : `${tf} view only - not validated, no signals · `}` +
+           (live ? "live prices (Yahoo, may lag a few seconds)" : "live feed unavailable: last published data");
+  return d;
+}
+/* today's live bar into a D1 / W1 / MN1 series */
+function mergeToday(c, b, tf) {
+  if (!c.length || !b) return;
+  const last = c[c.length - 1];
+  const sameBar = tf === "D1" ? b.time === last.time :
+    tf === "W1" ? b.time - last.time < 7 * 86400 && b.time >= last.time :
+    new Date(b.time * 1000).getUTCMonth() === new Date(last.time * 1000).getUTCMonth() &&
+    b.time >= last.time;
+  if (b.time < last.time) return;
+  if (sameBar) {
+    if (tf === "D1") Object.assign(last, b);
+    else { last.high = Math.max(last.high, b.high); last.low = Math.min(last.low, b.low);
+           last.close = b.close; }
+  } else c.push(tf === "D1" ? { ...b } : { ...b, time: b.time });
+}
+function alignLive(bars) {
+  if (!STATIC || !SNAP_TF.has(state.tf) || !state.data?.candles?.length) return bars;
+  const c = state.data.candles; const before = c.length;
+  for (const b of bars) mergeToday(c, b, state.tf);
+  return c.slice(c.length === before ? -1 : -2);
+}
+/* indicators (same formulas as tfx/strategies/indicators.py) */
+function ewm(x, alpha, minp) {
+  const out = new Array(x.length).fill(NaN); let y = NaN, n = 0;
+  for (let i = 0; i < x.length; i++) {
+    if (Number.isNaN(x[i])) { out[i] = n >= minp ? y : NaN; continue; }
+    y = n === 0 ? x[i] : (1 - alpha) * y + alpha * x[i]; n++;
+    if (n >= minp) out[i] = y;
+  }
+  return out;
+}
+function computeOverlays(c) {
+  const n = c.length, H = c.map((b) => b.high), L = c.map((b) => b.low),
+        C = c.map((b) => b.close), T = c.map((b) => b.time);
+  const ser = (v) => v.map((x, i) => ({ time: T[i], value: x }))
+    .filter((p) => Number.isFinite(p.value));
+  const ema = (k) => ewm(C, 2 / (k + 1), k);
+  const tr = c.map((b, i) => i === 0 ? b.high - b.low : Math.max(b.high - b.low,
+    Math.abs(b.high - C[i - 1]), Math.abs(b.low - C[i - 1])));
+  const atr = (k) => ewm(tr, 1 / k, k);
+  const dch = (k) => H.map((_, i) => i < k ? NaN : Math.max(...H.slice(i - k, i)));
+  const dcl = (k) => L.map((_, i) => i < k ? NaN : Math.min(...L.slice(i - k, i)));
+  const d = C.map((x, i) => i === 0 ? NaN : x - C[i - 1]);
+  const up = ewm(d.map((x) => Number.isNaN(x) ? NaN : Math.max(x, 0)), 1 / 2, 2);
+  const dn = ewm(d.map((x) => Number.isNaN(x) ? NaN : Math.max(-x, 0)), 1 / 2, 2);
+  const rsi2 = up.map((u, i) => Number.isNaN(u) ? NaN : dn[i] === 0 ? 100 : 100 - 100 / (1 + u / dn[i]));
+  const pdm = H.map((h, i) => { if (!i) return 0; const u = h - H[i - 1], v = L[i - 1] - L[i];
+    return u > v && u > 0 ? u : 0; });
+  const mdm = L.map((l, i) => { if (!i) return 0; const u = H[i] - H[i - 1], v = L[i - 1] - l;
+    return v > u && v > 0 ? v : 0; });
+  const tr14 = atr(14), p14 = ewm(pdm, 1 / 14, 14), m14 = ewm(mdm, 1 / 14, 14);
+  const dx = tr14.map((t, i) => { const pd = 100 * p14[i] / t, md = 100 * m14[i] / t;
+    return pd + md === 0 ? NaN : 100 * Math.abs(pd - md) / (pd + md); });
+  const a20 = atr(20);
+  const ov = {};
+  for (const k of [20, 55, 100]) { ov[`donchian_high_${k}`] = ser(dch(k)); ov[`donchian_low_${k}`] = ser(dcl(k)); }
+  for (const k of [20, 100, 200]) ov[`ema_${k}`] = ser(ema(k));
+  ov.atr_stop_long = ser(C.map((x, i) => x - 2 * a20[i]));
+  ov.adx = ser(ewm(dx, 1 / 14, 14)); ov.rsi2 = ser(rsi2); ov.atr = ser(a20);
+  return n ? ov : {};
 }
 function toast(msg, ms = 3500) {
   const t = $("#toast"); t.textContent = msg; t.hidden = false;
@@ -170,7 +289,7 @@ function startLive() {
       const lv = await api(`/api/live/${state.symbol}?tf=${state.tf}`);
       if (lv.symbol !== state.symbol || lv.tf !== state.tf) return;
       state.live = lv.price;
-      for (const b of lv.bars) {
+      for (const b of alignLive(lv.bars)) {
         if (state.ctype === "line") main.update({ time: b.time, value: b.close });
         else if (state.ctype !== "ha") main.update(b);
       }
@@ -178,7 +297,8 @@ function startLive() {
     } catch { /* keep the last good chart; next tick retries */ }
     finally { inflight = false; }
   };
-  state.liveTimer = setInterval(tick, 1000);  // once a second (display only)
+  // once a second locally (MT5); every 3 s on the public site (CDN-cached Yahoo feed)
+  state.liveTimer = setInterval(tick, STATIC ? 3000 : 1000);
 }
 function showState(msg) { const s = $("#chartState"); s.hidden = false; s.textContent = msg; }
 function hideState() { $("#chartState").hidden = true; }
@@ -398,8 +518,8 @@ async function loadWatchlist() {
     $("#watchTable tbody").innerHTML = rows.map((r) => `
       <tr data-sym="${esc(r.symbol)}" class="${r.symbol === state.symbol ? "sel" : ""}"
           tabindex="0" aria-label="${esc(r.symbol)} ${esc(r.status)}">
-        <td><strong>${esc(r.symbol)}</strong>${r.data !== "FRESH" ? ` <span class="muted" title="${esc(r.data)}">⚠</span>` : ""}</td>
-        <td><span class="chip ${esc(r.status)}">${ICON[r.status] || ""} ${esc(r.status)}</span>${r.locked ? ' <span class="muted" title="strategy not validated">🔒</span>' : ""}</td>
+        <td><strong>${esc(r.symbol)}</strong>${r.data !== "FRESH" ? ` <span class="muted" title="${esc(r.data)}">${ico("alert", "warn")}</span>` : ""}</td>
+        <td><span class="chip ${esc(r.status)}">${ICON[r.status] || ""} ${esc(r.status)}</span>${r.locked ? ' <span class="muted" title="strategy not validated">${ico("lock")}</span>' : ""}</td>
         <td>${esc(r.grade || "")}</td><td>${r.score ?? "–"}</td>
         <td class="${(r.change_pct ?? 0) >= 0 ? "up" : "down"}">${r.change_pct === null ? "–" :
           `${r.change_pct >= 0 ? "▲" : "▼"} ${Math.abs(r.change_pct).toFixed(2)}%`}</td></tr>`).join("");
@@ -833,7 +953,10 @@ function bindUI() {
   $("#bellBtn").addEventListener("click", () => { const m = $("#bellMenu"); m.hidden = !m.hidden; });
   $("#themeBtn").addEventListener("click", async () => {
     const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = t; await api("/api/settings", { method: "PUT", body: JSON.stringify({ theme: t }) }); renderChart(); });
+    document.documentElement.dataset.theme = t;
+    if (STATIC) { try { localStorage.setItem("tfx.theme", t); } catch { /* private mode */ } }
+    else await api("/api/settings", { method: "PUT", body: JSON.stringify({ theme: t }) });
+    renderChart(); });
   $("#settingsBtn").addEventListener("click", () => {
     state.tab = "settings"; renderTab(); if (PHONE.matches) setView("more"); });
   $$(".mnav button").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
@@ -867,6 +990,10 @@ async function init() {
   if (!LW) { showState("Chart library failed to load."); return; }
   try {
     state.meta = await api("/api/meta");
+    if (STATIC) {
+      const when = new Date(state.meta.published_at).toLocaleString();
+      $(".footer .muted").textContent = `Public view-only · analysis published ${when} · ${state.meta.live_note}`;
+    }
     $("#symbolList").innerHTML = state.meta.symbols.map((s) => `<option value="${s}">`).join("");
     if (!state.meta.symbols.includes(state.symbol)) state.symbol = state.meta.symbols[0];
     buildTfSelect(); buildIndMenu(); bindUI(); await loadSettings();

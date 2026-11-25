@@ -83,6 +83,16 @@ def test_meta_health_and_localhost_only(env: Env) -> None:
     trend_menu = {m["timeframe"]: m for m in meta["timeframes"]["trend"]}
     assert trend_menu["D1"]["validated"] and trend_menu["H4"]["label"] == "H4 (not validated)"
     assert c.get("/api/health", headers={"host": "evil.example.com"}).status_code == 400
+    assert c.get("/api/health", headers={"host": "my-pc.tail1234.ts.net"}).status_code == 400
+
+
+def test_tailscale_host_allowed_only_when_configured(cfg: AppConfig) -> None:
+    cfg.server.allowed_hosts = ["my-pc.tail1234.ts.net"]
+    e = Env(cfg, validated=False, fire=False)
+    assert e.client.get("/api/health", headers={"host": "my-pc.tail1234.ts.net"}).json()["ok"]
+    assert e.client.get("/api/health",
+                        headers={"host": "other.tail9999.ts.net"}).status_code == 400
+    e.store.close()
 
 
 def test_flow_select_symbol_view_signal_checklist_log_trade(env: Env) -> None:
