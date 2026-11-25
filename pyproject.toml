@@ -1,0 +1,40 @@
+[project]
+name = "trillionairefx"
+version = "0.1.0"
+description = "Local, rules-based FX signal and trade-coaching platform (decision support only; never places trades)."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "var"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+packages = ["tfx"]
+
+[[tool.mypy.overrides]]
+module = ["pandas.*", "yfinance.*", "numpy.*", "scipy.*", "sklearn.*", "apscheduler.*", "curl_cffi.*", "certifi.*", "MetaTrader5.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib -q"
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = ["network: hits real free data providers (set TFX_NETWORK_TESTS=1 to run)"]
+filterwarnings = ["error::FutureWarning:tfx.*"]
+
+[tool.coverage.run]
+source = ["tfx"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

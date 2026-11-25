@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TrillionaireFX</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23111827'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' stroke='%234c9aff' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app" class="layout">
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar" role="banner">
+    <div class="brand" aria-label="TrillionaireFX">Trillionaire<span>FX</span></div>
+    <label class="sr-only" for="symbolSearch">Symbol</label>
+    <input id="symbolSearch" class="search" list="symbolList" placeholder="Symbol…" autocomplete="off"
+           aria-label="Search symbol">
+    <datalist id="symbolList"></datalist>
+    <div id="tfBar" class="seg tf" role="group" aria-label="Timeframe"></div>
+    <div class="seg" role="group" aria-label="Chart type">
+      <button data-ctype="candles" class="active" title="Candles">Candles</button>
+      <button data-ctype="bars" title="Bars">Bars</button>
+      <button data-ctype="line" title="Line">Line</button>
+      <button data-ctype="ha" title="Heikin Ashi">HA</button>
+    </div>
+    <div class="menu">
+      <button id="indBtn" aria-haspopup="true" aria-expanded="false">Indicators ▾</button>
+      <div id="indMenu" class="dropdown" role="menu" hidden></div>
+    </div>
+    <div class="spacer"></div>
+    <label class="mini">Balance <input id="balanceInput" type="number" min="1" step="1" aria-label="Account balance"></label>
+    <span id="ccyLabel" class="muted"></span>
+    <label class="mini">Risk % <input id="riskInput" type="number" min="0.05" max="1" step="0.05" aria-label="Risk per trade percent"></label>
+    <button id="themeBtn" title="Toggle light/dark theme" aria-label="Toggle theme">◐</button>
+    <div class="menu">
+      <button id="bellBtn" aria-label="Alerts" title="Alerts">🔔<span id="bellCount" class="badge" hidden>0</span></button>
+      <div id="bellMenu" class="dropdown wide" hidden></div>
+    </div>
+    <button id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
+    <button id="helpBtn" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+  </header>
+
+  <!-- ============================== LEFT TOOLBAR ============================== -->
+  <nav class="toolbar" aria-label="Drawing tools">
+    <button data-tool="cursor" class="active" title="Cursor (Esc)" aria-label="Cursor">➤</button>
+    <button data-tool="crosshair" title="Crosshair" aria-label="Crosshair">✛</button>
+    <button data-tool="hline" title="Horizontal line (Alt+H)" aria-label="Horizontal line">―</button>
+    <button data-tool="trendline" title="Trend line (Alt+T)" aria-label="Trend line">╱</button>
+    <button data-tool="rect" title="Rectangle (Alt+R)" aria-label="Rectangle">▭</button>
+    <button data-tool="measure" title="Measure (Alt+M)" aria-label="Measure">📏</button>
+    <button data-tool="text" title="Text note (Alt+N)" aria-label="Text note">T</button>
+    <button data-tool="long" title="Long position (Alt+L)" aria-label="Long position tool">⬆</button>
+    <button data-tool="short" title="Short position (Alt+S)" aria-label="Short position tool">⬇</button>
+    <button data-tool="eraser" title="Eraser (Alt+E)" aria-label="Eraser">⌫</button>
+  </nav>
+
+  <!-- ============================== CHART ============================== -->
+  <main class="chartArea" aria-label="Price chart">
+    <div id="regimeBanner" class="regime" role="status"></div>
+    <div id="legend" class="legend" aria-live="polite"></div>
+    <div id="chartNote" class="chartNote" hidden></div>
+    <div id="chartWrap" class="chartWrap">
+      <div id="chart"></div>
+      <canvas id="overlay" aria-hidden="true"></canvas>
+    </div>
+    <div id="chartState" class="state" hidden></div>
+  </main>
+
+  <!-- ============================== RIGHT SIDEBAR ============================== -->
+  <aside class="sidebar" aria-label="Watchlist and signal">
+    <section class="watchlist">
+      <h2>Watchlist</h2>
+      <table id="watchTable" aria-label="Watchlist">
+        <thead><tr><th>Symbol</th><th>Status</th><th>Grade</th><th>Score</th><th>Chg</th></tr></thead>
+        <tbody><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+      </table>
+    </section>
+    <section id="signalPanel" class="signal" aria-live="polite">
+      <div class="muted">Select a symbol.</div>
+    </section>
+  </aside>
+
+  <!-- ============================== BOTTOM PANEL ============================== -->
+  <section class="bottom" aria-label="Panels">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="trades" class="active">Open Trades</button>
+      <button role="tab" data-tab="signals">Signals History</button>
+      <button role="tab" data-tab="journal">Journal</button>
+      <button role="tab" data-tab="validation">How reliable is this?</button>
+      <button role="tab" data-tab="mindset">Mindset</button>
+      <button role="tab" data-tab="missed">Missed Opportunities</button>
+      <button role="tab" data-tab="execution">Execution</button>
+      <button role="tab" data-tab="paper">Paper Trading</button>
+      <button role="tab" data-tab="replay">Replay</button>
+      <button role="tab" data-tab="quality">Data Quality</button>
+      <button role="tab" data-tab="settings">Settings</button>
+    </div>
+    <div id="tabBody" class="tabBody" role="tabpanel"></div>
+  </section>
+
+  <footer class="footer" role="contentinfo">
+    <strong>Educational decision support. Trading carries risk of loss. Past performance does not guarantee future results.</strong>
+    <span class="muted">TrillionaireFX never places trades. Charts by TradingView Lightweight Charts™ (Apache-2.0).</span>
+  </footer>
+</div>
+
+<!-- ============================== DIALOGS ============================== -->
+<dialog id="modal" aria-modal="true"><div id="modalBody"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

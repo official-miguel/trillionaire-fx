@@ -1,0 +1,27 @@
+# TrillionaireFX — pinned dependencies (all free / open source).
+# Install: python -m pip install -r requirements.txt
+# --- runtime ---
+numpy==2.5.5
+pandas==3.1.1
+scipy==1.18.1
+scikit-learn==1.9.1
+SQLAlchemy==2.1.9
+pydantic==2.14.4
+PyYAML==6.0.4
+requests==2.34.2
+tzdata==2026.6
+yfinance==1.8.0
+curl_cffi==0.17.0      # yfinance transport; pinned for reproducibility
+certifi==2026.11.20
+MetaTrader5==5.0.6231; sys_platform == "win32"   # read-only broker data
+fastapi==0.165.0
+uvicorn==0.54.0
+APScheduler==3.11.3
+# --- dev / test ---
+pytest==9.2.0
+pytest-cov==7.1.0
+httpx==0.28.1
+ruff==0.17.6
+mypy==2.4.1
+types-PyYAML==6.0.12.20261122
+types-requests==2.33.0.20261030

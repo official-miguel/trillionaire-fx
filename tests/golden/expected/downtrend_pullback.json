@@ -1,0 +1,475 @@
+{
+ "code_hashes": {
+  "ict": "85d2aad952a6a95c9ed38ca211961da9632020ef129d3127e2b2f836b2e71485",
+  "ict_flex": "85d2aad952a6a95c9ed38ca211961da9632020ef129d3127e2b2f836b2e71485",
+  "mean_reversion": "ce96d8ef5a30f8b137a444ab63f6551006453dad1256ba14112ac7deea1517c2",
+  "pullback": "be3da02dc39b949d93f1eaf4f04928dfbdfa41563363f1328bab82b9d99aad6e",
+  "trend": "72a0861bd6bebe4f70059ed61d3f0ef01bea29df986692d921f5233a409940ea"
+ },
+ "outputs": {
+  "ict": {
+   "count": 4,
+   "setups": [
+    {
+     "dir": 1,
+     "entry": 0.970686,
+     "mss": "2016-02-16",
+     "quality": 98.3,
+     "stop": 0.962084,
+     "sweep": "2016-02-12",
+     "target": 0.98789
+    },
+    {
+     "dir": -1,
+     "entry": 0.973417,
+     "mss": "2016-02-29",
+     "quality": 16.1,
+     "stop": 0.97904,
+     "sweep": "2016-02-15",
+     "target": 0.962172
+    },
+    {
+     "dir": 1,
+     "entry": 0.831757,
+     "mss": "2016-08-08",
+     "quality": 68.2,
+     "stop": 0.828007,
+     "sweep": "2016-07-29",
+     "target": 0.839258
+    }
+   ]
+  },
+  "ict_flex": {
+   "count": 7,
+   "setups": [
+    {
+     "dir": 1,
+     "entry": 0.970686,
+     "mss": "2016-02-16",
+     "quality": 98.3,
+     "stop": 0.962084,
+     "sweep": "2016-02-12",
+     "target": 0.98789
+    },
+    {
+     "dir": -1,
+     "entry": 0.973417,
+     "mss": "2016-02-29",
+     "quality": 16.1,
+     "stop": 0.97904,
+     "sweep": "2016-02-15",
+     "target": 0.962172
+    },
+    {
+     "dir": 1,
+     "entry": 0.831757,
+     "mss": "2016-08-08",
+     "quality": 68.2,
+     "stop": 0.828007,
+     "sweep": "2016-07-29",
+     "target": 0.839258
+    }
+   ]
+  },
+  "mean_reversion": {
+   "grade": "B",
+   "levels": {
+    "breakeven": 0.98008,
+    "entry": 0.98016,
+    "risk": 0.00847,
+    "rr": 0.89,
+    "stop": 0.98863,
+    "target": 0.97264
+   },
+   "score": 68.9,
+   "setup": {
+    "box": {
+     "currency": "USD",
+     "entry": 0.98016,
+     "from_time": 1455580800,
+     "risk_amount": null,
+     "rr": 0.89,
+     "side": "short",
+     "stop": 0.98863,
+     "target": 0.97264
+    },
+    "lines": [
+     {
+      "icon": "\u25bc",
+      "id": "entry",
+      "label": "Entry",
+      "price": 0.98016
+     },
+     {
+      "icon": "\u2715",
+      "id": "stop",
+      "label": "Initial stop",
+      "price": 0.98863
+     },
+     {
+      "icon": "\u25ce",
+      "id": "target",
+      "label": "Target (5 EMA)",
+      "price": 0.97264
+     }
+    ],
+    "markers": [
+     {
+      "icon": "\u25bc",
+      "label": "SHORT setup",
+      "price": 0.98016,
+      "time": 1455580800
+     },
+     {
+      "icon": "\u23f1",
+      "label": "Time stop in 5 bars",
+      "price": 0.97264,
+      "time": 1455580800
+     }
+    ],
+    "strategy": "mean_reversion",
+    "summary": "NOT VALIDATED - view only, no trade. RSI(2) 96.4 in a quiet range (ADX 19.2); target 5 EMA 0.97264; stop 0.98863; time stop in 5 bars; R:R 0.9",
+    "validated": false,
+    "zones": [
+     {
+      "bottom": 0.97264,
+      "icon": "\u25ad",
+      "id": "band",
+      "label": "Reversion band (entry to 5 EMA target)",
+      "top": 0.98016
+     }
+    ]
+   },
+   "setup_bar": "2016-02-16",
+   "signals": [],
+   "size_multiplier": 0.737,
+   "total_fired": 3
+  },
+  "pullback": {
+   "grade": "A",
+   "levels": {
+    "breakeven": 0.83416,
+    "entry": 0.83424,
+    "risk": 0.00719,
+    "rr": 1.0,
+    "stop": 0.84143,
+    "target": 0.82705
+   },
+   "score": 77.1,
+   "setup": {
+    "box": {
+     "currency": "USD",
+     "entry": 0.83424,
+     "from_time": 1470700800,
+     "risk_amount": null,
+     "rr": 1.0,
+     "side": "short",
+     "stop": 0.84143,
+     "target": 0.82705
+    },
+    "lines": [
+     {
+      "icon": "\u25bc",
+      "id": "entry",
+      "label": "Entry",
+      "price": 0.83424
+     },
+     {
+      "icon": "\u2715",
+      "id": "stop",
+      "label": "Initial stop",
+      "price": 0.84143
+     },
+     {
+      "icon": "\u2913",
+      "id": "broken",
+      "label": "Broken level",
+      "price": 0.82848
+     },
+     {
+      "icon": "\u25c6",
+      "id": "target",
+      "label": "+1R partial (50%)",
+      "price": 0.82705
+     }
+    ],
+    "markers": [
+     {
+      "icon": "\u25bc",
+      "label": "SHORT setup",
+      "price": 0.83424,
+      "time": 1470700800
+     }
+    ],
+    "strategy": "pullback",
+    "summary": "NOT VALIDATED - view only, no trade. Pullback to EMA 20 0.83734 in a downtrend (ADX 56.4); broken level 0.82848; stop 0.84143; R:R 1.0",
+    "validated": false,
+    "zones": [
+     {
+      "bottom": 0.83607,
+      "icon": "\u25ad",
+      "id": "retest",
+      "label": "Retest zone (EMA 20 \u00b1 0.25 ATR)",
+      "top": 0.83862
+     }
+    ]
+   },
+   "setup_bar": "2016-08-09",
+   "signals": [
+    [
+     "2016-08-09",
+     -1,
+     "A",
+     0.841427,
+     1.0
+    ]
+   ],
+   "size_multiplier": 1.0,
+   "total_fired": 13
+  },
+  "trend": {
+   "grade": "A",
+   "levels": {
+    "breakeven": 0.8266,
+    "entry": 0.82668,
+    "risk": 0.00975,
+    "rr": 1.0,
+    "stop": 0.83643,
+    "target": 0.81693
+   },
+   "score": 81.2,
+   "setup": {
+    "box": {
+     "currency": "USD",
+     "entry": 0.82668,
+     "from_time": 1470182400,
+     "risk_amount": null,
+     "rr": 1.0,
+     "side": "short",
+     "stop": 0.83643,
+     "target": 0.81693
+    },
+    "lines": [
+     {
+      "icon": "\u25bc",
+      "id": "entry",
+      "label": "Entry",
+      "price": 0.82668
+     },
+     {
+      "icon": "\u2715",
+      "id": "stop",
+      "label": "Initial stop",
+      "price": 0.83643
+     },
+     {
+      "icon": "\u23ba",
+      "id": "channel_hi",
+      "label": "20-day high",
+      "price": 0.85171
+     },
+     {
+      "icon": "\u23bd",
+      "id": "channel_lo",
+      "label": "20-day low",
+      "price": 0.82848
+     },
+     {
+      "icon": "\u223c",
+      "id": "ema_100",
+      "label": "EMA 100",
+      "price": 0.89271
+     },
+     {
+      "icon": "\u223c",
+      "id": "ema_200",
+      "label": "EMA 200",
+      "price": 0.92495
+     },
+     {
+      "icon": "\u21e2",
+      "id": "trail",
+      "label": "Trailing stop (20-day)",
+      "price": 0.85171
+     },
+     {
+      "icon": "\u25c6",
+      "id": "target",
+      "label": "+1R partial (50%)",
+      "price": 0.81693
+     },
+     {
+      "icon": "=",
+      "id": "breakeven",
+      "label": "Breakeven after partial",
+      "price": 0.8266
+     }
+    ],
+    "markers": [
+     {
+      "icon": "\u25bc",
+      "label": "SHORT setup",
+      "price": 0.82668,
+      "time": 1470182400
+     }
+    ],
+    "strategy": "trend",
+    "summary": "NOT VALIDATED - view only, no trade. Close 0.82668 broke the 20-day low 0.82848; ADX 66.9; stop 0.83643 (2 ATR); +1R at 0.81693; R:R 1.0",
+    "validated": false,
+    "zones": []
+   },
+   "setup_bar": "2016-08-03",
+   "signals": [
+    [
+     "2016-06-16",
+     -1,
+     "A",
+     0.897456,
+     1.0
+    ],
+    [
+     "2016-06-17",
+     -1,
+     "A",
+     0.896282,
+     1.0
+    ],
+    [
+     "2016-06-20",
+     -1,
+     "A",
+     0.892996,
+     1.0
+    ],
+    [
+     "2016-06-21",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-06-22",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-06-23",
+     -1,
+     "A",
+     0.88679,
+     1.0
+    ],
+    [
+     "2016-06-24",
+     -1,
+     "A",
+     0.885215,
+     1.0
+    ],
+    [
+     "2016-06-30",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-01",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-05",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-07",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-11",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-12",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-13",
+     -1,
+     "A",
+     0.853856,
+     1.0
+    ],
+    [
+     "2016-07-25",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-26",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-27",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-07-28",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ],
+    [
+     "2016-08-03",
+     -1,
+     "A",
+     0.836431,
+     1.0
+    ],
+    [
+     "2016-08-10",
+     0,
+     "WATCH",
+     null,
+     0.0
+    ]
+   ],
+   "size_multiplier": 1.0,
+   "total_fired": 35
+  }
+ },
+ "rule_versions": {
+  "ict": "1.0.0",
+  "ict_flex": "1.0.0",
+  "mean_reversion": "1.0.0",
+  "pullback": "1.0.0",
+  "trend": "1.0.0"
+ }
+}

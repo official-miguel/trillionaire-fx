@@ -1,0 +1,326 @@
+# TrillionaireFX configuration.
+# Every strategy / risk parameter lives here. Changing a parameter after seeing
+# backtest results counts as a new TRIAL and must be logged (see validation.trial_log).
+# Decision-support only: nothing in this file can place an order.
+
+random_seed: 42
+
+account:
+  currency: USD              # account currency (USD, EUR, GBP, KES, ...)
+  starting_balance: 1000     # assumption until the user supplies a value
+  risk_per_trade_pct: 0.5    # default 0.5 %; hard cap enforced in code at 1.0 %
+  broker_profile: typical_retail_ecn   # see costs.profiles
+
+data:
+  db_path: var/tfx.sqlite
+  # mt5 = your broker's MetaTrader 5 terminal (read-only; must be open and signed in).
+  # oanda is used only if OANDA_API_TOKEN is set (not available to Kenyan residents).
+  provider_order: [yfinance, mt5, oanda]   # stooq removed: bot wall / timeouts (code kept)
+  history_start: 2003-01-01  # 2005 backtest start + warm-up for 200-EMA / 1y ATR percentile
+  # Daily bars run midnight to midnight UTC (user decision 2026-11-23: repaired Yahoo +
+  # MT5). Yahoo's own daily FX bars are faulty since ~2011, so FX daily bars are built
+  # from Yahoo hourly bars (last ~2 years) and from repaired Yahoo daily bars (older).
+  # A bar is "complete" this many minutes after 00:00 UTC (00:30 UTC = 19:30 New York
+  # in winter, 20:30 in summer). Signals are evaluated after that.
+  day_boundary: utc_midnight
+  bar_complete_delay_minutes: 30
+  max_signal_lag_sessions: 0   # signals only from the latest completed session
+  incremental_overlap_days: 14
+  overlap_tolerance_pct: 0.5   # cached vs re-fetched close mismatch => full re-download
+  spike_flag_pct: 8.0          # daily moves larger than this are flagged for review
+  request_timeout_s: 20
+  non_session_days: ["12-25", "01-01"]   # MM-DD, treated as no-session days
+  # Cross-source verification: the latest bar must be confirmed by a second
+  # provider. Bars whose close-to-close change differs by more than
+  # max_disagreement_atr x ATR(20) are DISPUTED and produce no signal.
+  cross_check:
+    enabled: true
+    require_second_source: true   # no second source => UNVERIFIED => no signal
+    max_disagreement_atr: 0.2
+    window_bars: 20
+    reference_history_days: 120
+  mt5:
+    server_time: ny_close   # most brokers: New York + 7h. Use "utc" or e.g. "+2" if yours differs
+    terminal_path: null     # set only if you have several MT5 terminals installed
+  # Hourly bars (H4 is built from H1 on New York-close boundaries). Both Yahoo and MT5
+  # are stored; a bar is confirmed only where both agree (same 0.2 ATR rule). Yahoo
+  # keeps only ~730 days of hourly data, so CONFIRMED intraday history is short.
+  intraday:
+    enabled: true
+    history_days: 3650
+  # RESEARCH-ONLY H1 history from your broker's MT5 terminal, for H1/H4 backtests.
+  # Stored separately; never used to confirm live bars. Checked against Yahoo hourly
+  # (~2-year overlap) and against Yahoo daily (full span) with the same 0.2-ATR rule.
+  # These thresholds are pre-declared and must not be loosened to make a market pass.
+  # A FAIL keeps that market's H1/H4 strategy pairs "not validated".
+  # Tip: in MT5 set Tools > Options > Charts > "Max bars in chart" to Unlimited.
+  research:
+    enabled: true
+    start: 2005-01-01
+    min_years: 8              # at least 5 years of training data + 3-year holdout
+    min_coverage_pct: 95
+    gap_hours: 4
+    outlier_atr: 15
+    max_outlier_pct: 0.05
+    max_disagree_pct: 5.0
+    min_hourly_compared: 2000
+    min_daily_compared: 1000
+
+# Symbol metadata. typical_spread_pips are ASSUMPTIONS for a typical retail ECN
+# account (0.8 pips on majors). Replace them with your broker's real numbers.
+symbols:
+  EURUSD: {base: EUR, quote: USD, pip: 0.0001, yahoo: EURUSD=X, stooq: eurusd, oanda: EUR_USD, typical_spread_pips: 0.8}
+  GBPUSD: {base: GBP, quote: USD, pip: 0.0001, yahoo: GBPUSD=X, stooq: gbpusd, oanda: GBP_USD, typical_spread_pips: 0.8}
+  USDJPY: {base: USD, quote: JPY, pip: 0.01,   yahoo: USDJPY=X, stooq: usdjpy, oanda: USD_JPY, typical_spread_pips: 0.8}
+  AUDUSD: {base: AUD, quote: USD, pip: 0.0001, yahoo: AUDUSD=X, stooq: audusd, oanda: AUD_USD, typical_spread_pips: 0.8}
+  USDCAD: {base: USD, quote: CAD, pip: 0.0001, yahoo: USDCAD=X, stooq: usdcad, oanda: USD_CAD, typical_spread_pips: 0.8}
+  NZDUSD: {base: NZD, quote: USD, pip: 0.0001, yahoo: NZDUSD=X, stooq: nzdusd, oanda: NZD_USD, typical_spread_pips: 0.8}
+  USDCHF: {base: USD, quote: CHF, pip: 0.0001, yahoo: USDCHF=X, stooq: usdchf, oanda: USD_CHF, typical_spread_pips: 0.8}
+  EURJPY: {base: EUR, quote: JPY, pip: 0.01,   yahoo: EURJPY=X, stooq: eurjpy, oanda: EUR_JPY, typical_spread_pips: 1.2}
+  GBPJPY: {base: GBP, quote: JPY, pip: 0.01,   yahoo: GBPJPY=X, stooq: gbpjpy, oanda: GBP_JPY, typical_spread_pips: 1.8}
+  EURGBP: {base: EUR, quote: GBP, pip: 0.0001, yahoo: EURGBP=X, stooq: eurgbp, oanda: EUR_GBP, typical_spread_pips: 1.0}
+  AUDJPY: {base: AUD, quote: JPY, pip: 0.01,   yahoo: AUDJPY=X, stooq: audjpy, oanda: AUD_JPY, typical_spread_pips: 1.4}
+  # Yahoo has no spot-gold daily series: GC=F is COMEX futures, used as a PROXY
+  # (roll gaps, futures basis). Your broker's MT5 spot gold is the reference that
+  # confirms each bar. The UI labels gold data as "futures proxy".
+  XAUUSD:
+    base: XAU
+    quote: USD
+    pip: 0.01
+    yahoo: GC=F
+    yahoo_is_proxy: true
+    stooq: xauusd
+    oanda: XAU_USD
+    typical_spread_pips: 25    # 25 x 0.01 = 0.25 USD per oz
+    providers: [yfinance, mt5, oanda]
+
+# ---------------------------------------------------------------------------
+# Sections below are consumed by later build steps. They are declared now so the
+# parameter grid is fixed BEFORE any backtest is run.
+# ---------------------------------------------------------------------------
+costs:
+  profiles:
+    typical_retail_ecn:
+      commission_per_lot_round_turn_usd: 7.0
+      commission_pips: 0.7        # $7 per 100k lot ~ 0.7 pip (gold: 7 x 0.01 = $0.07/oz)
+      slippage_pips: 0.2          # per side
+      swap_spread_fraction: 0.1   # nightly carry drag ~ 0.1 x spread (approximation; real
+                                  # swaps vary by pair and direction; see cost stress tests)
+  rollover_window_minutes: 30
+  max_spread_multiple: 3.0
+
+# Each strategy declares its own timeframes. Every candidate timeframe is a separate
+# strategy-timeframe pair: it is validated on its own, its trials count toward the
+# Deflated Sharpe, and it gives NO signals until it has a current PASS. A shorter
+# timeframe is kept only if it beats the longer one out-of-sample after costs.
+strategies:
+  trend:
+    enabled: true
+    timeframes: {candidates: [D1, H4], default: D1, bias: W1, execution: H1}
+    donchian_lookbacks: [20, 55, 100]
+    ema_filter: [100, 200]
+    adx_period: 14
+    adx_min: 20
+    exit_channel: 20
+    atr_period: 20
+    initial_stop_atr: 2.0
+  pullback:
+    enabled: true
+    timeframes: {candidates: [D1, H4], default: D1, bias: D1, execution: H1}
+    trend_ema: 200
+    pullback_ema: 20
+    adx_min: 20
+  mean_reversion:
+    enabled: true
+    timeframes: {candidates: [D1, H4, H1], default: D1, execution: H1}
+    adx_max: 20
+    atr_pct_max: 70
+    rsi_period: 2
+    rsi_long_below: 10
+    rsi_short_above: 90
+    target_ema: 5
+    stop_atr: 1.5
+    stop_atr_period: 14
+    time_stop_days: 5
+    risk_pct: 0.25
+    max_open: 2
+  grades:
+    b_adx_soft_min: 15
+    b_ema_proximity_pct: 1.0
+    watchlist_atr_distance: 0.5
+  filters:
+    shock_atr_pct: 90
+    max_trades_per_currency: 2
+  management:
+    partial_at_r: 1.0
+    partial_fraction: 0.5
+    breakeven_plus_spread: true
+    pyramid_at_r: 2.0
+    pyramid_risk_fraction: 0.25
+    max_pyramid_adds: 1
+  carry:
+    enabled: false
+    timeframes: {candidates: [W1], default: W1, rebalance: MN1, execution: H1}
+  xs_momentum:
+    # Cross-sectional currency momentum: rank 8 currencies by past return (vs USD),
+    # long the strongest vs short the weakest, rebalanced monthly, volatility-scaled.
+    enabled: true
+    timeframes: {candidates: [W1], default: W1, rebalance: MN1, execution: H1}
+  ts_momentum:
+    # Weekly time-series momentum per pair: hold in the direction of the past return,
+    # volatility-scaled, re-evaluated at each weekly close.
+    enabled: true
+    timeframes: {candidates: [W1], default: W1, execution: H1}
+  ict:
+    # ICT / smart-money model, as fixed rules (declared 2026-11-23 before any test):
+    #  1. Liquidity sweep: a bar trades beyond the last confirmed swing low (high) and
+    #     CLOSES back inside it.
+    #  2. Market structure shift (MSS) within `mss_window` bars: a close beyond the last
+    #     confirmed swing high (low) in the opposite direction.
+    #  3. Fair value gap (FVG) created between the sweep and the MSS (3-candle gap).
+    #  4. Discount/premium: the FVG midpoint (consequent encroachment) must lie in the
+    #     discount (premium) half of the sweep-to-MSS dealing range.
+    #  5. Entry: LIMIT at the FVG midpoint, valid `fvg_expiry` bars. Stop: beyond the
+    #     sweep extreme + 0.1 ATR. Target: `target` (2R, or the nearest opposing
+    #     liquidity with at least 1R). Time stop: `time_stop` bars after the fill.
+    enabled: true
+    mss_window: 10
+    time_stop: 10
+    timeframes: {candidates: [D1, H1], default: D1, bias: W1, execution: H1}
+  ict_flex:
+    # Same ICT model with REAL-MARKET TOLERANCES (declared 2026-11-23, before any ICT
+    # result was seen): near-sweeps, equal-level liquidity pools, near-FVGs and a
+    # 61.8% discount/premium line. Validated separately; trials counted.
+    enabled: true
+    mss_window: 10
+    time_stop: 10
+    tolerances:
+      sweep_close_tol_atr: 0.1
+      pool_tol_atr: 0.1
+      gap_tol_atr: 0.05
+      discount_max: 0.618
+    timeframes: {candidates: [D1, H1], default: D1, bias: W1, execution: H1}
+  supply_demand:
+    # Supply & demand zones, fixed rules declared 2026-11-24 BEFORE any S&D result
+    # (full text in tfx/strategies/supply_demand.py): base of 1-3 small-bodied candles,
+    # strong leg-out (body >= departure_atr x ATR) closing beyond the base, trade the
+    # FIRST return only, with the EMA50/EMA200 trend, LIMIT at the proximal edge, stop
+    # beyond the distal edge + 0.1 ATR. Used as the fallback when ICT has no setup.
+    enabled: true
+    base_body_atr: 0.5
+    max_base: 3
+    stop_buffer_atr: 0.1
+    time_stop: 15
+    trend_filter: true
+    timeframes: {candidates: [D1], default: D1, bias: W1, execution: D1}
+  ml_scorer: {enabled: false}
+
+# Small grids, declared BEFORE any backtest and never widened after seeing results.
+# Every combination is a trial and counts toward the Deflated Sharpe Ratio.
+parameter_grid:
+  trend:
+    initial_stop_atr: [1.5, 2.0, 2.5]
+    exit_channel: [10, 20, 30]
+    partial_at_r: [0.75, 1.0, 1.5]
+  pullback:
+    exit_channel: [10, 20, 30]
+    partial_at_r: [0.75, 1.0, 1.5]
+  mean_reversion:
+    mr_stop_atr: [1.0, 1.5, 2.0]
+    mr_time_stop: [3, 5, 8]
+  # Declared 2026-11-23 BEFORE the first momentum backtest (not changed afterwards).
+  xs_momentum:
+    formation_months: [3, 6, 12]
+    n_each_side: [1, 2]
+  ts_momentum:
+    lookback_weeks: [12, 26, 52]
+  # ICT grid declared 2026-11-23 BEFORE the first ICT backtest (8 trials).
+  ict:
+    swing_n: [3, 5]
+    fvg_expiry: [5, 10]
+    target: ["2R", "liquidity"]
+  ict_flex:
+    swing_n: [3, 5]
+    fvg_expiry: [5, 10]
+    target: ["2R", "liquidity"]
+  supply_demand:
+    departure_atr: [1.0, 1.5]
+    max_age: [20, 60]
+    target: ["2R", "opposing"]
+
+# Setup score (0-100). Soft factors only change size and grade; they never block a
+# trade alone. "candidate" weights are starting values: they are re-estimated on
+# training data only and frozen before the holdout test. "informational" factors have
+# a small FIXED weight because no free history exists to validate them; the UI labels
+# them "informational - not validated".
+scoring:
+  soft_factors:
+    trend_clarity:       {mode: candidate, weight: 0.15}
+    reward_to_risk:      {mode: candidate, weight: 0.15}
+    ensemble_agreement:  {mode: candidate, weight: 0.12}
+    volatility_regime:   {mode: candidate, weight: 0.10}
+    exposure_load:       {mode: candidate, weight: 0.10}
+    recent_loss_streak:  {mode: candidate, weight: 0.08}
+    confirmations:       {mode: candidate, weight: 0.10}
+    htf_bias:            {mode: candidate, weight: 0.08}
+    session_spread:      {mode: candidate, weight: 0.04}
+    rate_differential:   {mode: candidate, weight: 0.02, enabled: false}
+    positioning_cot:     {mode: candidate, weight: 0.02, enabled: false}
+    news_proximity:
+      mode: informational
+      weight: 0.04
+      note: >-
+        No free historical economic calendar covers all tier-1 events since 2005, so
+        this factor cannot be validated. Shown for awareness with a small fixed weight.
+
+risk:
+  risk_hard_cap_pct: 1.0
+  kelly_fraction_cap: 0.25
+  portfolio_vol_target_pct: 10.0
+  max_open_risk_pct: 3.0
+  drawdown_breaker_pct: 15.0
+
+validation:
+  backtest_start: 2005-01-01
+  holdout_years: 3
+  pbo_max: 0.05
+  dsr_min_prob: 0.90
+  neighbour_profitable_min: 0.70
+  cpcv_groups: 10
+  cpcv_test_groups: 2
+  embargo_days: 10
+  bootstrap_samples: 2000
+  bootstrap_block_days: 20
+  stress_periods:
+    gfc_2008: [2008-01-01, 2009-03-31]
+    chf_2015: [2015-01-01, 2015-02-28]
+    covid_2020: [2020-02-15, 2020-05-31]
+
+# Missed-trade study (declared 2026-11-24 before it was run; tfx/study_missed.py).
+# Training data only (the 3-year holdout is never used). Winners AND losers counted.
+missed_study:
+  symbols: [EURUSD, GBPUSD]
+  base_params: {swing_n: 3, fvg_expiry: 5, target: "2R"}
+  min_trades: 30            # adoption: >= 30 trades, mean R > 0, bootstrap p5 > 0
+
+# Move study (declared 2026-11-24 before it was run; tfx/study_moves.py). Starts from
+# the big moves, tests 14 precursor rules (tfx/strategies/precursors.py) counting every
+# time they fired, not only the moves. Training data only; all 14 rules are trials.
+move_study:
+  symbols: [EURUSD, GBPUSD]
+  min_trades: 100
+  bracket: {stop_atr: 1.0, target_r: 3.0, time_stop: 10}
+
+mindset:
+  max_new_trades_per_week: 3
+  cooldown_after_losing_days: 2
+  cooldown_hours: 24
+  emotion_wait_threshold: 4
+  emotion_wait_minutes: 15
+
+paper:
+  min_weeks: 8
+
+server:
+  host: 127.0.0.1    # localhost only — never bind to 0.0.0.0
+  port: 8765
